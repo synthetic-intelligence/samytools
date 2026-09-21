@@ -17,6 +17,7 @@ no strict 'subs';
 
 use POSIX qw(strftime ceil floor);
 use MIME::Base64 qw(decode_base64 encode_base64);
+use MIME::Base32 qw(decode_base32 encode_base32);
 use Data::Dumper;
 
 our %_y;
@@ -530,6 +531,15 @@ sub html2text
   return HTML::Entities::decode_entities(shift);
 }
 
+# more easily b32 decode/encode
+sub b32 { &base32 }
+sub b32d { &decode_base32 }
+sub b32e { &encode_base32 }
+sub base32
+{
+  return $_[0] =~ /^[A-Z2-7\r\n]+={0,2}$/ ? decode_base32($_[0]) : encode_base32($_[0]);
+}
+
 # more easily b64 decode/encode
 sub b64 { &base64 }
 sub b64d { &decode_base64 }
@@ -553,7 +563,7 @@ sub json
   }
 
   # read in file if file passed
-  $data = cat($data) if -f $data;
+  $data = join("", cat($data)) if -f $data;
 
   return !ref($data) ? decode_json($data) : encode_json($data);
 }
@@ -922,6 +932,7 @@ sub path
 
 # cat but always return scalar
 sub f { return scalar cat(@_) }
+sub catf { &f }
 
 # cat(filename[, 1 to not fail[, 1 to not interpolate ~[, lines]]])
 sub cat
